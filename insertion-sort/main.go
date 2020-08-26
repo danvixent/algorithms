@@ -7,10 +7,6 @@ func main() {
 }
 
 func sort(slice []int) []int {
-	if len(slice) < 2 {
-		return slice
-	}
-
 	for j := 1; j < len(slice); j++ {
 		i := j - 1
 		key := slice[j]
