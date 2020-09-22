@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"math"
+	"sort"
 
 	fuzz "github.com/google/gofuzz"
 )
@@ -44,9 +45,25 @@ func mergeSort(slice []int64, p, r int) {
 	}
 }
 
+type int64Slice []int64
+
+func (s int64Slice) Less(i, j int) bool {
+	return s[i] < s[j]
+}
+
+func (s int64Slice) Swap(i, j int) {
+	s[i], s[j] = s[j], s[i]
+}
+
+func (s int64Slice) Len() int {
+	return len(s)
+}
+
 func main() {
-	slice := [1000]int64{}
+	var slice = [500000000]int64{} // 500m elements
 	fuzz.New().Fuzz(&slice)
 	mergeSort(slice[:], 0, len(slice)-1)
-	fmt.Println("sorted:", slice)
+
+	// wrap as int64Slice type, so we can confirm it is sorted.
+	fmt.Println(sort.IsSorted(int64Slice(slice[:])))
 }
