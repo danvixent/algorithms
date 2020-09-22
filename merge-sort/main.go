@@ -101,7 +101,7 @@ func (s int64Slice) Len() int {
 }
 
 func main() {
-	var slice = [500000000]int64{} // 500m elements
+	var slice = [200000000]int64{} // 500m elements
 	fuzz.New().Fuzz(&slice)
 	mergeSort(slice[:], 0, len(slice)-1)
 
