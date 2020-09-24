@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"math"
 	"sort"
 
 	fuzz "github.com/google/gofuzz"
@@ -22,7 +21,7 @@ func merge(slice []int64, p, q, r int) {
 	// The extra +1 makes room for math.MaxInt64
 	// Which is the max integer so all other are
 	// always less than it.
-	left, right := make([]int64, n1+1), make([]int64, n2+1)
+	left, right := make([]int64, n1), make([]int64, n2)
 
 	// copy slice[p:q] into left
 	for i := 0; i < n1; i++ {
@@ -34,14 +33,6 @@ func merge(slice []int64, p, q, r int) {
 		right[i] = slice[q+i+1]
 	}
 
-	// assign math.MaxInt64 to the last
-	// index in left & right, allowing
-	// us to be sure that all integers
-	// will be less or equal but never
-	// greater than it, hence the last indexes
-	// of left & right will never be exceeded.
-	left[n1], right[n2] = math.MaxInt64, math.MaxInt64
-
 	i, j := 0, 0 // index counters for left & right respectively
 
 	// range from p to r
@@ -50,20 +41,20 @@ func merge(slice []int64, p, q, r int) {
 	// to right[j], left[i] will be copied
 	// into slice[p] else, right[j] will be copied
 	// into slice[p].
-	//
-	// counters i & j will never go out of bounds,
-	// for instance: when j reaches the index that
-	// contains math.MaxInt64, left[i] will always
-	// less than or equal to right[j], hence the
-	// else block which contains j++ will never
-	// be executed again
+
+	n2-- // set n2 to the last index value of right
+	n1-- // set n1 to the last index value of left
 	for ; p <= r; p++ {
 		if left[i] <= right[j] {
 			slice[p] = left[i]
-			i++
+			if i != n1 { // only increment i if n1 hasn't been reached
+				i++
+			}
 		} else {
 			slice[p] = right[j]
-			j++
+			if j != n2 { // only increment j if n2 hasn't been reached
+				j++
+			}
 		}
 	}
 }
@@ -101,10 +92,10 @@ func (s int64Slice) Len() int {
 }
 
 func main() {
-	var slice = [200000000]int64{} // 500m elements
+	var slice = [2000000]int64{} // 2m elements
 	fuzz.New().Fuzz(&slice)
 	mergeSort(slice[:], 0, len(slice)-1)
 
 	// wrap as int64Slice type, so we can confirm it is sorted.
-	fmt.Println(sort.IsSorted(int64Slice(slice[:])))
+	fmt.Println("was sorted correctly:", sort.IsSorted(int64Slice(slice[:])))
 }
